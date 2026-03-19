@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <main className="flex-grow">{children}</main>
         <Footer />
+        <Script src="https://analytics.buyandscrap.com/script.js" data-website-id="230edbe1-a1b1-47db-8ceb-f32df10c205e" strategy="afterInteractive" />
       </body>
     </html>
   );
