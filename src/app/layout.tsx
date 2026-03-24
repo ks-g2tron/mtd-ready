@@ -73,6 +73,7 @@ function Footer() {
         <div className="border-t border-gray-700 pt-6 text-sm text-center">
           <p>&copy; {new Date().getFullYear()} MTDReady. This site contains affiliate links. We may earn a commission at no extra cost to you.</p>
           <p className="mt-2">This tool provides general guidance only and is not a substitute for professional tax advice.</p>
+          <p className="mt-2"><a href="/privacy" className="hover:text-white underline">Privacy Policy</a></p>
         </div>
       </div>
     </footer>

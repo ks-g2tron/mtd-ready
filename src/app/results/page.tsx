@@ -1,7 +1,102 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
+
+function EmailCapture({ status, income, software }: { status: string; income: string; software: string }) {
+  const [email, setEmail] = useState("")
+  const [reminderConsent, setReminderConsent] = useState(false)
+  const [thirdPartyConsent, setThirdPartyConsent] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!reminderConsent) { setError("Please agree to receive reminders to continue."); return }
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, status, income, software, third_party_consent: thirdPartyConsent }),
+      })
+      if (res.ok) {
+        setSubmitted(true)
+      } else {
+        setError("Something went wrong. Please try again.")
+      }
+    } catch {
+      setError("Something went wrong. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-8 mb-8 text-center">
+        <div className="text-4xl mb-3">✅</div>
+        <h3 className="text-xl font-bold text-green-800 mb-2">You&apos;re on the list!</h3>
+        <p className="text-green-700">We&apos;ll remind you before the April 2026 deadline. Check your inbox.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-lg">!</div>
+        <div>
+          <h2 className="text-xl font-bold">Get your deadline reminder</h2>
+          <p className="text-sm text-gray-500">April 2026 is just weeks away — don&apos;t miss it.</p>
+        </div>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="email"
+          required
+          placeholder="your@email.com"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-base focus:border-accent focus:outline-none"
+        />
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={reminderConsent}
+            onChange={e => setReminderConsent(e.target.checked)}
+            className="mt-1 w-4 h-4 accent-green-500"
+          />
+          <span className="text-sm text-gray-700">
+            I agree to receive MTD deadline reminders and compliance tips from MTD Ready. Unsubscribe any time. <span className="text-red-500">*</span>
+          </span>
+        </label>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={thirdPartyConsent}
+            onChange={e => setThirdPartyConsent(e.target.checked)}
+            className="mt-1 w-4 h-4 accent-green-500"
+          />
+          <span className="text-sm text-gray-600">
+            I&apos;m happy to be contacted by MTD-compatible software providers and accounting firms who can help me comply. <span className="text-gray-400">(optional)</span>
+          </span>
+        </label>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+        <p className="text-xs text-gray-400">By signing up you agree to our <a href="/privacy" className="underline hover:text-gray-600">Privacy Policy</a>.</p>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-accent text-white font-bold py-3 rounded-xl hover:bg-green-600 transition-colors disabled:opacity-50"
+        >
+          {loading ? "Saving..." : "Send me the reminder →"}
+        </button>
+      </form>
+    </div>
+  )
+}
 
 function ResultsContent() {
   const params = useSearchParams();
@@ -137,6 +232,9 @@ function ResultsContent() {
             ))}
           </div>
         </div>
+
+        {/* Email capture */}
+        <EmailCapture status={status} income={income} software={software} />
 
         {/* Software recommendations */}
         {!hasCompatibleSoftware && (
